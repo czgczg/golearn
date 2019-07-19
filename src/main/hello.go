@@ -2,22 +2,19 @@ package main
 
 import (
 	"fmt"
-	"reflect"
-	"test"
+	"time"
 )
 
 func main() {
-	hello := test.SayHello()
-	count := 18
-	fmt.Println(hello)
 
-	fmt.Println(reflect.TypeOf(hello))
-	fmt.Println(&hello)
-	fmt.Println(reflect.TypeOf(count))
+	now := time.Now().UTC()
 
-	const Ln2 = 0.693147180559945309417232121458176568075500134360255254120680009693147180559945309417232121458176568075500134360255254120680009;
-	var a = float32(Ln2)
+	fmt.Println(now)
 
-	fmt.Println(Ln2)
-	fmt.Println(a)
+	format := now.Format("2006-01-02 15:04:05")
+
+	const i=5
+	fmt.Println(&10)
+	fmt.Println(&i)
+	fmt.Println(format)
 }
