@@ -1,234 +1,177 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
-	"math"
+	"html/template"
+	"log"
 	"net/http"
-	"reflect"
-	"sync"
+	"strings"
 	"time"
-	"unsafe"
+	"unicode/utf8"
+     _"github.com/go-sql-driver/mysql"
 )
 
-var (
-	counter = 0
-	//互斥锁 使按顺序访问代码
-	lock sync.Mutex
-)
 
+var(
+	name string
+	age int
+)
 func main() {
 
-	now := time.Now().UTC()
+	var a int
 
-	fmt.Println(now)
+	a = 19
+	//这是编码成了utf-8的text 是个什么鬼 打印到制台是一个带？的方框
+	s := string(a)
 
-	format := now.Format("2006-01-02 15:04:05")
+	r, size := utf8.DecodeRuneInString(s)
 
-	fmt.Println(format)
 
-	//exercise slice
-	//todo slice的容量能超过相关数组的长度吗？
-	var arr1 [6] int
-	var slice1 = arr1[2:5]
 
-	for i := 0; i < len(arr1); i++ {
-		arr1[i] = i
-	}
 
-	for i := 0; i < len(slice1); i++ {
-		fmt.Printf("Slice at %d is %d\n", i, slice1[i])
-	}
+	fmt.Println("value is:", a)
 
-	fmt.Printf("The length of arr1 is %d\n", len(arr1))
-	fmt.Printf("The length of slice1 is %d\n", len(slice1))
-	fmt.Printf("The capacity of slice1 is %d\n", cap(slice1))
 
-	var number = make([]int, 3, 5)
+	fmt.Println("the decode result is",r)
+	fmt.Println("the decode size is",size)
 
-	fmt.Println(number)
-	fmt.Println(cap(number))
-	fmt.Println(len(number))
+	myPointer := getPointer()
 
-	var slice2 = make([]int, 4)
+	fmt.Println("the address is",myPointer)
+	fmt.Println("the value is",*myPointer)
 
-	slice2[0] = 1;
-	slice2[1] = 2;
-	slice2[2] = 3;
-	fmt.Println("slice2 value", slice2)
 
-	for ix, value := range slice2 {
-		fmt.Println(ix, value)
-	}
+	slice2 := []byte {'h','e','l','l','o'}
 
-	//map
-	var mapdemo = make(map[int]string)
+	fmt.Println(slice2)
 
-	mapdemo[1] = "1"
-	mapdemo[3] = "3"
+	entry:=[]string{"jack","bob"}
 
-	fmt.Println("origin", mapdemo)
-	//删除map元素
-	delete(mapdemo, 1)
+	for i,val:=range entry{
 
-	//judge key——value is exist  amaze grammar
-	_, ok := mapdemo[1]
-
-	fmt.Println(ok)
-
-	fmt.Println("result", mapdemo)
-
-	//for-range 奇怪的语法
-
-	//map类型的切片 想获取map类型的切片 必须使用两次make函数 第一次分配切片 第二次分配slice中的每个map元素
-
-	fmt.Println(unsafe.Sizeof(int8(127)))
-
-	fmt.Println(unsafe.Sizeof(int64(127)))
-
-	fmt.Println(math.Pi)
-	//not necessary all elements in array have to be assigned a value during short hand declaration
-	a := [3] int{12}
-	fmt.Println(a)
-
-	a1 := [] int{2, 4, 5}
-
-	//这样申明无意义呀
-	// var b []int = a[1:2]
-	fmt.Println(a1)
-
-	//method one to create slice
-	// var b = a1[0:2]
-	//method two to create slice  returns a slice reference
-	c := []int{1, 2}
-
-	d := [] int{2, 3, 4}
-
-	of := reflect.TypeOf(d)
-	ofa1 := reflect.TypeOf(a1)
-
-	fmt.Println(c)
-
-	fmt.Println(of)
-
-	fmt.Println(ofa1)
-
-	fmt.Println("start a xiecheng")
-
-	var arr4 [5] int
-
-	arr4 = [5] int{1, 2, 4, 5, 6}
-
-	arr4[0] = 3
-
-	fmt.Println(arr4)
-
-	/**
-	go协程类似一个线程，但是go协程是由go自己调度，而不是os，在协程中的代码可以和其他代码并发执行，go协程
-	 */
-	go process()
-
-	fmt.Println("done")
-
-	fmt.Println("--------------------------------------------")
-
-	for i := 0; i < 2; i++ {
-		go incr()
+		fmt.Printf("At position %d, the character %s is present\n", i, val)
 
 	}
 
-	p := person{"czg", 12, "female"}
 
-	pp := &p
 
-	pp.name = "pp"
-	fmt.Println(pp)
+	fmt.Println("-------------------------------------------|")
 
-	fmt.Println(p.name)
-	p.name = "xx"
+	//fmt.Println("enter your name: ")
+	//fmt.Scanln(&name)
+	//fmt.Println("enter your age: ")
+	//fmt.Scanln(&age)
+	//
+	//fmt.Printf("hi %s %d \n",name,age)
 
-	fmt.Println(p)
 
-	fmt.Println(reflect.TypeOf(p))
+	ch :=make(chan  string)
 
-	fmt.Println("++++++++++++++++++++++")
+	go sendData(ch)
 
-	var ani animal
-	ani = Snake{Poisonous: true}
-	fmt.Println(ani.description())
+	go getData(ch)
 
-	ani = cat{Sound: "miaomiao"}
-	fmt.Println(ani.description())
+	time.Sleep(2e9)
 
-	resp, err := http.Get("https://www.baidu.com/")
 
-	if err != nil {
+	//
+	//http.HandleFunc("/hello", sayhelloName) //设置访问的路由
+	//http.HandleFunc("/login",login)
+	//err := http.ListenAndServe(":9090", nil) //设置监听的端口
+	//if err != nil {
+	//	log.Fatal("ListenAndServe: ", err)
+	//}
 
-		fmt.Println(err)
+
+
+	//数据库操作
+	db,err :=sql.Open("mysql","root:ai9oMsUan,D9@tcp(127.0.0.1:3306)/sale")
+	checkErr(err)
+
+	stmt, e := db.Prepare("insert into userinfo set username='czg',department='oppo',created='czg'")
+	checkErr(e)
+
+	fmt.Println("the result is ",stmt)
+
+
+}
+
+func getPointer()  ( myPointer *int)  {
+	a :=234
+	return &a
+}
+
+func sendData(ch chan string)  {
+
+	ch <- "Washington"
+	ch <- "Tripoli"
+	ch <- "London"
+	ch <- "Beijing"
+	ch <- "Tokyo"
+
+}
+
+func getData(ch chan string)  {
+
+	var input string
+
+	time.Sleep(2e9)
+
+	for   {
+
+		input= <-ch
+
+		fmt.Printf("%s ", input)
 
 	}
 
-	fmt.Println(resp)
+}
 
-	//chanel
-	cha := make(chan string)
+func sayhelloName(w http.ResponseWriter ,r * http.Request)  {
 
-	go func() { cha <- "hello" }()
+	r.ParseForm()
 
-	msg := <-cha
+	fmt.Println(r.Form)  //这些信息是输出到服务器端的打印信息
+	fmt.Println("path", r.URL.Path)
+	fmt.Println("scheme", r.URL.Scheme)
+	fmt.Println(r.Form["url_long"])
+	for k, v := range r.Form {
+		fmt.Println("key:", k)
+		fmt.Println("val:", strings.Join(v, ""))
+	}
+	fmt.Fprintf(w, "Hello astaxie!") //这个写入到w的是输出到客户端的
 
-	fmt.Println(msg)
 
-	ch := make(chan string)
-
-	go sc(ch)
 
 }
 
-func sc(ch chan<- string) {
+func checkErr(err error)  {
 
-	ch <- "hello"
+	if err!=nil{
 
-}
+		panic(err)
 
-func process() {
-	fmt.Println("process")
-}
+	}
 
-func incr() {
 
-	lock.Lock()
-	defer lock.Unlock()
-	counter ++
-	fmt.Println(counter)
-}
-
-type person struct {
-	name   string
-	age    int
-	gender string
-}
-
-type animal interface {
-	description() string
-}
-
-type cat struct {
-	Type  string
-	Sound string
-}
-type Snake struct {
-	Type      string
-	Poisonous bool
-}
-
-func (s Snake) description() string {
-
-	return fmt.Sprintf("poisonous: %v", s.Poisonous)
 
 }
 
-func (c cat) description() string {
+func login( w http.ResponseWriter,r *http.Request)  {
+	fmt.Println("method:",r.Method)
 
-	return fmt.Sprint("sound:", c.Sound)
+	if(r.Method== "GET") {
+		t,_:=template.ParseFiles("login.gtpl")
 
+		log.Println(t.Execute(w,nil))
+	}else{
+
+		r.ParseForm()
+		fmt.Println("username:",r.Form["username"])
+
+		fmt.Println("password",r.Form["password"])
+
+
+	}
 }
